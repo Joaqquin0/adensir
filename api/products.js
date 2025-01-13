@@ -8,15 +8,9 @@ const allowedOrigins = ["http://127.0.0.1:5500", "https://adensir1.vercel.app"];
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("No permitido por CORS"));
-      }
-    },
-    methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type"],
+    origin: "*", // Permitir cualquier origen
+    methods: ["GET", "POST"], // Métodos permitidos
+    allowedHeaders: ["Content-Type"], // Encabezados permitidos
   })
 );
 app.use(bodyParser.json());
