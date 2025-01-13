@@ -5,13 +5,9 @@ const bodyParser = require("body-parser");
 
 const app = express();
 
-app.use(
-  cors({
-    origin: "*", // Permitir cualquier origen
-    methods: ["GET", "POST"], // Métodos permitidos
-    allowedHeaders: ["Content-Type"], // Encabezados permitidos
-  })
-);
+app.use(cors({
+    origin: 'https://andeisndonacion.adensir.com'
+}));
 app.use(bodyParser.json());
 //
 // Endpoint para obtener productos de Stripe
