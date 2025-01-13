@@ -12,6 +12,7 @@ module.exports = async (req, res) => {
                 name: product.name,
                 description: product.description,
                 image: product.images[0],
+                default_price_id: product.default_price.id,
                 price: product.default_price.unit_amount,
                 currency: product.default_price.currency,
                 recurring: product.default_price.recurring || null,
