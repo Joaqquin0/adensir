@@ -9,12 +9,21 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === "POST") {
-    const { priceId } = req.body;
+    const { priceId, mode } = req.body;
 
-    if (!priceId) {
-      console.error("Error: 'priceId' no se recibió.");
+    if (!priceId || !mode) {
+      console.error("Error: 'priceId' o 'mode' no se recibieron.");
       res.setHeader("Access-Control-Allow-Origin", "*");
-      return res.status(400).json({ error: "El campo 'priceId' es obligatorio." });
+      return res.status(400).json({
+        error: "Los campos 'priceId' y 'mode' son obligatorios.",
+      });
+    }
+    if (!["payment", "subscription"].includes(mode)) {
+      console.error("Error: 'mode' no es válido.");
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      return res.status(400).json({
+        error: "El campo 'mode' debe ser 'payment' o 'subscription'.",
+      });
     }
 
     try {
@@ -26,7 +35,7 @@ module.exports = async (req, res) => {
             quantity: 1,
           },
         ],
-        mode: "payment",
+        mode,
         success_url: "https://tu-dominio.com/success", // Cambiar por tu URL real
         cancel_url: "https://tu-dominio.com/cancel", // Cambiar por tu URL real
       });
