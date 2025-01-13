@@ -4,13 +4,13 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 
 const app = express();
-const allowedOrigins = ["http://127.0.0.1:5500", "https://adensir1.vercel.app"];
+const cors = require("cors");
 
 app.use(
   cors({
-    origin: "*", // Permitir cualquier origen
-    methods: ["GET", "POST"], // Métodos permitidos
-    allowedHeaders: ["Content-Type"], // Encabezados permitidos
+    origin: "*", // Permite todos los orígenes
+    methods: ["GET", "POST", "OPTIONS"], // Métodos permitidos
+    allowedHeaders: ["Content-Type", "Authorization"], // Encabezados permitidos
   })
 );
 app.use(bodyParser.json());
