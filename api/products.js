@@ -1,17 +1,17 @@
 const express = require("express");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const cors = require("cors");
+/*const cors = require("cors");*/
 const bodyParser = require("body-parser");
 
 const app = express();
 
 // Configura CORS para aceptar solicitudes de tu dominio local
-app.use(cors({
+/*app.use(cors({
     origin: "http://127.0.0.1:5500",  // Permitir solicitudes solo desde tu dominio local
     methods: ["GET", "POST", "OPTIONS"],  // Métodos permitidos
     allowedHeaders: ["Content-Type", "Authorization"]  // Cabeceras permitidas
 }));
-
+*/
 app.use(bodyParser.json());
 
 // Endpoint para obtener productos de Stripe
