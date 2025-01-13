@@ -11,6 +11,12 @@ module.exports = async (req, res) => {
   if (req.method === "POST") {
     const { priceId } = req.body;
 
+    if (!priceId) {
+      console.error("Error: 'priceId' no se recibió.");
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      return res.status(400).json({ error: "El campo 'priceId' es obligatorio." });
+    }
+
     try {
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
@@ -21,14 +27,15 @@ module.exports = async (req, res) => {
           },
         ],
         mode: "payment",
-        success_url: "https://example.com/success", // Cambiar por tu URL
-        cancel_url: "https://example.com/cancel", // Cambiar por tu URL
+        success_url: "https://tu-dominio.com/success", // Cambiar por tu URL real
+        cancel_url: "https://tu-dominio.com/cancel", // Cambiar por tu URL real
       });
 
-      res.setHeader("Access-Control-Allow-Origin", "*"); // Permitir CORS
+      res.setHeader("Access-Control-Allow-Origin", "*");
       return res.status(200).json({ url: session.url });
     } catch (error) {
-      res.setHeader("Access-Control-Allow-Origin", "*"); // Permitir CORS
+      console.error("Error al crear la sesión de checkout:", error); // Log detallado
+      res.setHeader("Access-Control-Allow-Origin", "*");
       return res.status(500).json({ error: error.message });
     }
   }
