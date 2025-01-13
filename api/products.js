@@ -4,7 +4,21 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 
 const app = express();
-app.use(cors());
+const allowedOrigins = ["http://127.0.0.1:5500", "https://adensir1.vercel.app"];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("No permitido por CORS"));
+      }
+    },
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
 app.use(bodyParser.json());
 
 // Endpoint para obtener productos de Stripe
