@@ -5,17 +5,15 @@ const bodyParser = require("body-parser");
 
 const app = express();
 
-app.use(cors());
+// Configura CORS para aceptar solicitudes de tu dominio local
+app.use(cors({
+    origin: "http://127.0.0.1:5500",  // Permitir solicitudes solo desde tu dominio local
+    methods: ["GET", "POST", "OPTIONS"],  // Métodos permitidos
+    allowedHeaders: ["Content-Type", "Authorization"]  // Cabeceras permitidas
+}));
+
 app.use(bodyParser.json());
 
-// Middleware para añadir las cabeceras CORS a todas las respuestas
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    next();
-});
-//
 // Endpoint para obtener productos de Stripe
 app.get("/api/products", async (req, res) => {
     try {
