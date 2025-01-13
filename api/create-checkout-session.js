@@ -18,6 +18,7 @@ module.exports = async (req, res) => {
         error: "Los campos 'priceId' y 'mode' son obligatorios.",
       });
     }
+
     if (!["payment", "subscription"].includes(mode)) {
       console.error("Error: 'mode' no es válido.");
       res.setHeader("Access-Control-Allow-Origin", "*");
@@ -35,15 +36,15 @@ module.exports = async (req, res) => {
             quantity: 1,
           },
         ],
-        mode,
-        success_url: "https://tu-dominio.com/success", // Cambiar por tu URL real
-        cancel_url: "https://tu-dominio.com/cancel", // Cambiar por tu URL real
+        mode, // Dinámico: "payment" o "subscription"
+        success_url: "https://tu-dominio.com/success",
+        cancel_url: "https://tu-dominio.com/cancel",
       });
 
       res.setHeader("Access-Control-Allow-Origin", "*");
       return res.status(200).json({ url: session.url });
     } catch (error) {
-      console.error("Error al crear la sesión de checkout:", error); // Log detallado
+      console.error("Error al crear la sesión de checkout:", error);
       res.setHeader("Access-Control-Allow-Origin", "*");
       return res.status(500).json({ error: error.message });
     }
