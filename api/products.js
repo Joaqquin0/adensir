@@ -8,12 +8,11 @@ const cors = require("cors");
 
 app.use(
   cors({
-    origin: "*", // Permite todos los orígenes
-    methods: ["GET", "POST", "OPTIONS"], // Métodos permitidos
-    allowedHeaders: ["Content-Type", "Authorization"], // Encabezados permitidos
+    origin: "*", // Permitir cualquier origen
+    methods: ["GET", "POST"], // Métodos permitidos
+    allowedHeaders: ["Content-Type"], // Encabezados permitidos
   })
 );
-
 app.use(bodyParser.json());
 //
 // Endpoint para obtener productos de Stripe
