@@ -8,44 +8,25 @@ module.exports = async (req, res) => {
         return res.status(204).end();
       }
       
-    if (req.method === "POST") {
-        const { monto, tipoDonacion } = req.body;
+      if (req.method === "POST") {
+        const { monto, tipoDonacion, productId } = req.body;
 
-        if (!monto || !tipoDonacion) {
-            return res.status(400).json({ error: "Faltan parámetros" });
+        // Verificar que el monto y el tipo de donación sean válidos
+        if (!monto || monto <= 0 || !productId) {
+            return res.status(400).json({ error: "Datos inválidos" });
         }
 
         try {
-            let priceData;
-            
-            // Si es una donación única
-            if (tipoDonacion === "unica") {
-                priceData = await stripe.prices.create({
-                    unit_amount: monto * 100, // Convertir a centavos
-                    currency: "eur", // O la moneda que elijas
-                    product_data: {
-                        name: `Donación Única de $${monto}`,
-                    },
-                });
-            }
+            // Crear un precio personalizado basado en el productId
+            const price = await stripe.prices.create({
+                unit_amount: monto * 100, // Stripe requiere que el monto esté en centavos
+                currency: 'eur', // Cambia la moneda si es necesario
+                product: productId,  // Usar el productId de la donación única
+            });
 
-            // Si es una suscripción
-            if (tipoDonacion === "suscripcion") {
-                priceData = await stripe.prices.create({
-                    unit_amount: monto * 100, // Convertir a centavos
-                    currency: "usd", // O la moneda que elijas
-                    recurring: { interval: "month" }, // Suscripción mensual
-                    product_data: {
-                        name: `Suscripción mensual de $${monto}`,
-                    },
-                });
-            }
-
-            // Devolver el priceId generado
-            res.status(200).json({ priceId: priceData.id });
-
+            res.json({ priceId: price.id });
         } catch (error) {
-            console.error("Error al crear el precio en Stripe:", error);
+            console.error("Error al crear el precio:", error);
             res.status(500).json({ error: "Error al crear el precio" });
         }
     } else {
