@@ -4,6 +4,13 @@ const SECRET_KEY = process.env.JWT_SECRET_KEY; // Define esto en tu .env
 const TOKEN_EXPIRATION = "5m"; // El token expira en 5 minutos
 
 module.exports = (req, res) => {
+    if (req.method === "OPTIONS") {
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        return res.status(204).end();
+    }
+
     if (req.method === "POST") {
         const { clientId } = req.body; // Opcional: usar un identificador para validar al cliente
 
