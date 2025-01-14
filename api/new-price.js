@@ -40,6 +40,12 @@ module.exports = async (req, res) => {
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 module.exports = async (req, res) => {
+    if (req.method === "OPTIONS") {
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        return res.status(204).end();
+      }
     if (req.method === "POST") {
         const { monto, tipoDonacion, productId, frecuencia } = req.body;
 
