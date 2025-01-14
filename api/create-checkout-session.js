@@ -1,62 +1,65 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const authenticateToken = require("./authMiddleware"); // Importa el middleware
 
 module.exports = async (req, res) => {
   // Manejo de preflight (CORS) para solicitudes de navegadores
   if (req.method === "OPTIONS") {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     return res.status(204).end();
   }
 
-  // Solo aceptar solicitudes POST
-  if (req.method === "POST") {
-    const { priceId } = req.body;
+  // Verifica el token antes de procesar la solicitud
+  authenticateToken(req, res, async () => {
+    // Solo aceptar solicitudes POST
+    if (req.method === "POST") {
+      const { priceId } = req.body;
 
-    // Verificar si 'priceId' está presente
-    if (!priceId) {
-      console.error("Error: 'priceId' no se recibió.");
-      res.setHeader("Access-Control-Allow-Origin", "*");
-      return res.status(400).json({ error: "El campo 'priceId' es obligatorio." });
-    }
-
-    try {
-      // Recuperar información del precio desde Stripe
-      const price = await stripe.prices.retrieve(priceId);
-
-      if (!price) {
-        console.error(`No se encontró el precio con ID: ${priceId}`);
+      if (!priceId) {
+        console.error("Error: 'priceId' no se recibió.");
         res.setHeader("Access-Control-Allow-Origin", "*");
-        return res.status(404).json({ error: "El precio especificado no existe." });
+        return res.status(400).json({ error: "El campo 'priceId' es obligatorio." });
       }
 
-      // Determinar el modo: 'payment' o 'subscription'
-      const mode = price.recurring ? "subscription" : "payment";
+      try {
+        // Recuperar información del precio desde Stripe
+        const price = await stripe.prices.retrieve(priceId);
 
-      // Crear sesión de checkout en Stripe
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
-        line_items: [
-          {
-            price: priceId,
-            quantity: 1,
-          },
-        ],
-        mode,
-        success_url: "https://tu-dominio.com/success",
-        cancel_url: "https://tu-dominio.com/cancel",
-      });
+        if (!price) {
+          console.error(`No se encontró el precio con ID: ${priceId}`);
+          res.setHeader("Access-Control-Allow-Origin", "*");
+          return res.status(404).json({ error: "El precio especificado no existe." });
+        }
 
-      res.setHeader("Access-Control-Allow-Origin", "*");
-      return res.status(200).json({ url: session.url });
-    } catch (error) {
-      console.error("Error al crear la sesión de checkout:", error);
-      res.setHeader("Access-Control-Allow-Origin", "*");
-      return res.status(500).json({ error: error.message });
+        // Determinar el modo: 'payment' o 'subscription'
+        const mode = price.recurring ? "subscription" : "payment";
+
+        // Crear sesión de checkout en Stripe
+        const session = await stripe.checkout.sessions.create({
+          payment_method_types: ["card"],
+          line_items: [
+            {
+              price: priceId,
+              quantity: 1,
+            },
+          ],
+          mode,
+          success_url: "https://tu-dominio.com/success",
+          cancel_url: "https://tu-dominio.com/cancel",
+        });
+
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        return res.status(200).json({ url: session.url });
+      } catch (error) {
+        console.error("Error al crear la sesión de checkout:", error);
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        return res.status(500).json({ error: error.message });
+      }
     }
-  }
 
-  // Manejo de métodos no permitidos
-  res.setHeader("Allow", ["POST"]);
-  return res.status(405).end(`Method ${req.method} Not Allowed`);
+    // Manejo de métodos no permitidos
+    res.setHeader("Allow", ["POST"]);
+    return res.status(405).end(`Method ${req.method} Not Allowed`);
+  });
 };
