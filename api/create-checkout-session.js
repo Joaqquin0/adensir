@@ -1,6 +1,7 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 module.exports = async (req, res) => {
+  // Manejo de preflight (CORS) para solicitudes de navegadores
   if (req.method === "OPTIONS") {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -8,26 +9,31 @@ module.exports = async (req, res) => {
     return res.status(204).end();
   }
 
+  // Solo aceptar solicitudes POST
   if (req.method === "POST") {
-    const { priceId, mode } = req.body;
+    const { priceId } = req.body;
 
-    if (!priceId || !mode) {
-      console.error("Error: 'priceId' o 'mode' no se recibieron.");
+    // Verificar si 'priceId' está presente
+    if (!priceId) {
+      console.error("Error: 'priceId' no se recibió.");
       res.setHeader("Access-Control-Allow-Origin", "*");
-      return res.status(400).json({
-        error: "Los campos 'priceId' y 'mode' son obligatorios.",
-      });
-    }
-
-    if (!["payment", "subscription"].includes(mode)) {
-      console.error("Error: 'mode' no es válido.");
-      res.setHeader("Access-Control-Allow-Origin", "*");
-      return res.status(400).json({
-        error: "El campo 'mode' debe ser 'payment' o 'subscription'.",
-      });
+      return res.status(400).json({ error: "El campo 'priceId' es obligatorio." });
     }
 
     try {
+      // Recuperar información del precio desde Stripe
+      const price = await stripe.prices.retrieve(priceId);
+
+      if (!price) {
+        console.error(`No se encontró el precio con ID: ${priceId}`);
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        return res.status(404).json({ error: "El precio especificado no existe." });
+      }
+
+      // Determinar el modo: 'payment' o 'subscription'
+      const mode = price.recurring ? "subscription" : "payment";
+
+      // Crear sesión de checkout en Stripe
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items: [
@@ -36,7 +42,7 @@ module.exports = async (req, res) => {
             quantity: 1,
           },
         ],
-        mode, // Dinámico: "payment" o "subscription"
+        mode,
         success_url: "https://tu-dominio.com/success",
         cancel_url: "https://tu-dominio.com/cancel",
       });
@@ -50,6 +56,7 @@ module.exports = async (req, res) => {
     }
   }
 
+  // Manejo de métodos no permitidos
   res.setHeader("Allow", ["POST"]);
   return res.status(405).end(`Method ${req.method} Not Allowed`);
 };
