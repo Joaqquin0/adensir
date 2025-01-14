@@ -1,3 +1,5 @@
+
+/*
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 module.exports = async (req, res) => {
@@ -33,3 +35,56 @@ module.exports = async (req, res) => {
         res.status(405).json({ error: "Método no permitido" });
     }
 };
+*/
+
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+module.exports = async (req, res) => {
+    if (req.method === "POST") {
+        const { monto, tipoDonacion, productId, frecuencia } = req.body;
+
+        // Verificar que el monto, el tipo de donación y el productId sean válidos
+        if (!monto || monto <= 0 || !productId) {
+            return res.status(400).json({ error: "Datos inválidos" });
+        }
+
+        try {
+            let recurringInterval;
+            let intervalCount = 1;
+
+            // Establecer el intervalo de la suscripción
+            switch (frecuencia) {
+                case 'week':
+                    recurringInterval = 'week';
+                    break;
+                case 'month':
+                    recurringInterval = 'month';
+                    break;
+                case 'year':
+                    recurringInterval = 'year';
+                    break;
+                default:
+                    return res.status(400).json({ error: "Frecuencia de suscripción no válida" });
+            }
+
+            // Crear un precio recurrente
+            const price = await stripe.prices.create({
+                unit_amount: monto * 100,  // Stripe requiere que el monto esté en centavos
+                currency: 'usd', // Cambia la moneda si es necesario
+                product: productId,  // Usar el productId de la suscripción
+                recurring: {
+                    interval: recurringInterval,  // Establecer el intervalo
+                    interval_count: intervalCount,  // Si es semanal, mensual o anual
+                },
+            });
+
+            res.json({ priceId: price.id });
+        } catch (error) {
+            console.error("Error al crear el precio:", error);
+            res.status(500).json({ error: "Error al crear el precio" });
+        }
+    } else {
+        res.status(405).json({ error: "Método no permitido" });
+    }
+};
+
