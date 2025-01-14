@@ -156,7 +156,7 @@ module.exports = async (req, res) => {
                 // Crear un precio recurrente
                 price = await stripe.prices.create({
                     unit_amount: monto * 100,  // Stripe requiere que el monto esté en centavos
-                    currency: 'usd', // Cambia la moneda si es necesario
+                    currency: 'eur', // Cambia la moneda si es necesario
                     product: productId,  // Usar el productId de la suscripción
                     recurring: {
                         interval: recurringInterval,  // Establecer el intervalo
