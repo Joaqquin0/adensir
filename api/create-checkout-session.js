@@ -4,7 +4,7 @@ const authenticateToken = require("./authMiddleware"); // Importa el middleware
 module.exports = async (req, res) => {
   // Manejo de preflight (CORS) para solicitudes de navegadores
   if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Origin", "https://adensir.com/donacion");
+    res.setHeader("Access-Control-Allow-Origin", "https://adensir.com");
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     return res.status(204).end();
@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
   } catch (err) {
     // Si el token no es válido, el middleware devuelve un error
     console.error("Error de autenticación:", err.message);
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Origin", "https://adensir.com");
     return res.status(401).json({ error: "Token inválido o no proporcionado." });
   }
 
@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
 
     if (!priceId) {
       console.error("Error: 'priceId' no se recibió.");
-      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Allow-Origin", "https://adensir.com");
       return res.status(400).json({ error: "El campo 'priceId' es obligatorio." });
     }
 
@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
 
       if (!price) {
         console.error(`No se encontró el precio con ID: ${priceId}`);
-        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Origin", "https://adensir.com");
         return res.status(404).json({ error: "El precio especificado no existe." });
       }
 
@@ -58,15 +58,15 @@ module.exports = async (req, res) => {
           },
         ],
         mode,
-        success_url: "https://tu-dominio.com/success",
-        cancel_url: "https://tu-dominio.com/cancel",
+        success_url: "https://adensir.com/agradecimiento",
+        cancel_url: "https://adensir.com",
       });
 
-      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Allow-Origin", "https://adensir.com");
       return res.status(200).json({ url: session.url });
     } catch (error) {
       console.error("Error al crear la sesión de checkout:", error);
-      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Allow-Origin", "https://adensir.com");
       return res.status(500).json({ error: error.message });
     }
   }
