@@ -59,7 +59,7 @@ module.exports = async (req, res) => {
         ],
         mode,
         success_url: "https://adensir.com/agradecimiento",
-        cancel_url: "https://adensir.com",
+        cancel_url: "https://adensir.com/donacion",
       });
 
       res.setHeader("Access-Control-Allow-Origin", "https://adensir.com");
