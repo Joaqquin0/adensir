@@ -1,6 +1,6 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -38,4 +38,4 @@ module.exports = async (req, res) => {
     // Responde con un error si el método HTTP no es GET
     res.setHeader("Allow", ["GET"]);
     return res.status(405).end(`Method ${req.method} Not Allowed`);
-};
+}

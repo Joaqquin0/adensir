@@ -2,7 +2,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const authenticateToken = require("./authMiddleware"); // Importa el middleware
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   // Manejo de preflight (CORS) para solicitudes de navegadores
   if (req.method === "OPTIONS") {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -51,7 +51,7 @@ module.exports = async (req, res) => {
 
       // Crear sesión de checkout en Stripe
       const session = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"], //, "paypal"
+        payment_method_types: ["card", "paypal"],
         line_items: [
           {
             price: priceId,
@@ -75,4 +75,4 @@ module.exports = async (req, res) => {
   // Manejo de métodos no permitidos
   res.setHeader("Allow", ["POST"]);
   return res.status(405).end(`Method ${req.method} Not Allowed`);
-};
+}
