@@ -1,6 +1,6 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
     // Permitir solicitudes CORS
     if (req.method === "OPTIONS") {
         res.setHeader("Access-Control-Allow-Origin", "*");
@@ -79,4 +79,4 @@ module.exports = async (req, res) => {
     } else {
         res.status(405).json({ error: "Método no permitido" });
     }
-};
+}
