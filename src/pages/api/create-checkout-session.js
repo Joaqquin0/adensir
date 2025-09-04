@@ -49,9 +49,9 @@ export default async function handler(req, res) {
       // Determinar el modo: 'payment' o 'subscription'
       const mode = price.recurring ? "subscription" : "payment";
 
-      // Crear sesión de checkout en Stripe
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ["card" ],//"paypal"
+      // Configuración base para la sesión de checkout
+      const sessionConfig = {
+        payment_method_types: ["card"],
         line_items: [
           {
             price: priceId,
@@ -61,7 +61,16 @@ export default async function handler(req, res) {
         mode,
         success_url: "https://adensir.com/agradecimiento",
         cancel_url: "https://adensir.com/donacion",
-      });
+      };
+
+      // Para donaciones únicas, crear customer para capturar email
+      if (mode === "payment") {
+        sessionConfig.customer_creation = "always";
+      }
+      // Para suscripciones no agregamos customer_creation ya que Stripe maneja automáticamente
+
+      // Crear sesión de checkout en Stripe
+      const session = await stripe.checkout.sessions.create(sessionConfig);
 
       res.setHeader("Access-Control-Allow-Origin", "*");
       return res.status(200).json({ url: session.url });

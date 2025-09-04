@@ -15,6 +15,7 @@ export default async function handler(req, res) {
 
         // Verificar que el monto y el productId sean válidos
         if (!monto || monto <= 0 || !productId) {
+            res.setHeader("Access-Control-Allow-Origin", "*");
             return res.status(400).json({ error: "Datos inválidos" });
         }
 
@@ -35,6 +36,7 @@ export default async function handler(req, res) {
             else if (tipoDonacion === 'suscripcion') {
                 // Verificar que la frecuencia de la suscripción esté definida
                 if (!frecuencia || !['week', 'month', 'year'].includes(frecuencia)) {
+                    res.setHeader("Access-Control-Allow-Origin", "*");
                     return res.status(400).json({ error: "Frecuencia de suscripción no válida" });
                 }
 
@@ -53,6 +55,7 @@ export default async function handler(req, res) {
                         recurringInterval = 'year';
                         break;
                     default:
+                        res.setHeader("Access-Control-Allow-Origin", "*");
                         return res.status(400).json({ error: "Frecuencia de suscripción no válida" });
                 }
 
@@ -67,16 +70,20 @@ export default async function handler(req, res) {
                     },
                 });
             } else {
+                res.setHeader("Access-Control-Allow-Origin", "*");
                 return res.status(400).json({ error: "Tipo de donación no válido" });
             }
 
             // Responder con el ID del precio creado
-            res.json({ priceId: price.id });
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            return res.status(200).json({ priceId: price.id });
         } catch (error) {
             console.error("Error al crear el precio:", error);
-            res.status(500).json({ error: "Error al crear el precio" });
+            res.setHeader("Access-Control-Allow-Origin", "*");
+            return res.status(500).json({ error: "Error al crear el precio" });
         }
     } else {
-        res.status(405).json({ error: "Método no permitido" });
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        return res.status(405).json({ error: "Método no permitido" });
     }
 }
