@@ -3,9 +3,11 @@ import nodemailer from 'nodemailer';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Configurar nodemailer para producción
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
+// Configurar nodemailer para Hostinger
+ const transporter = nodemailer.createTransport({
+  host: 'smtp.hostinger.com',
+  port: 465,
+  secure: true, // true para 465, false para 587
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD
@@ -82,43 +84,79 @@ async function sendDonationEmail(paymentData) {
   }
 }
 
-// Función para procesar donación única
+// FUNCIÓN MEJORADA para procesar donación única SIN customer
 async function handleOneTimeDonation(paymentIntent) {
   try {
     console.log('🔍 Payment Intent recibido:', {
       id: paymentIntent.id,
       customer: paymentIntent.customer,
       receipt_email: paymentIntent.receipt_email,
-      shipping: paymentIntent.shipping
+      shipping: paymentIntent.shipping,
+      metadata: paymentIntent.metadata
     });
 
     let customer_email, customer_name;
 
-    // 1. Intentar obtener email del customer (si existe)
-    if (paymentIntent.customer) {
+    // NUEVA ESTRATEGIA: Obtener la sesión de checkout para acceder a custom_fields
+    try {
+      const sessions = await stripe.checkout.sessions.list({
+        payment_intent: paymentIntent.id,
+        limit: 1
+      });
+
+      if (sessions.data.length > 0) {
+        const session = sessions.data[0];
+        console.log('🛒 Sesión de checkout encontrada:', {
+          id: session.id,
+          customer_email: session.customer_email,
+          customer_details: session.customer_details,
+          custom_fields: session.custom_fields
+        });
+
+        // 1. Intentar con customer_details de la sesión (MÁS CONFIABLE)
+        if (session.customer_details?.email) {
+          customer_email = session.customer_details.email;
+          customer_name = session.customer_details.name || 'Donante Anónimo';
+          console.log('✅ Email obtenido de customer_details:', customer_email);
+        }
+
+        // 2. Intentar con custom_fields si los configuraste
+        if (!customer_email && session.custom_fields) {
+          const emailField = session.custom_fields.find(field => 
+            field.key === 'donor_email' || field.type === 'text'
+          );
+          if (emailField && emailField.text?.value) {
+            customer_email = emailField.text.value;
+            customer_name = 'Donante (Custom Field)';
+            console.log('✅ Email obtenido de custom_fields:', customer_email);
+          }
+        }
+      }
+    } catch (sessionError) {
+      console.log('⚠️ No se pudo obtener sesión de checkout:', sessionError.message);
+    }
+
+    // 3. FALLBACK: Métodos anteriores
+    if (!customer_email && paymentIntent.customer) {
       const customer = await stripe.customers.retrieve(paymentIntent.customer);
       customer_email = customer.email;
       customer_name = customer.name;
       console.log('👤 Cliente encontrado:', { email: customer_email, name: customer_name });
     }
 
-    // 2. Si no hay customer, intentar con shipping address
     if (!customer_email && paymentIntent.shipping?.address?.email) {
       customer_email = paymentIntent.shipping.address.email;
       customer_name = paymentIntent.shipping?.name || 'Donante Anónimo';
       console.log('📧 Email de shipping:', customer_email);
     }
 
-
-    // 3. Si no hay email aún, usar receipt_email
     if (!customer_email && paymentIntent.receipt_email) {
       customer_email = paymentIntent.receipt_email;
-      customer_name = 'Donante (Checkout)';
+      customer_name = 'Donante (Receipt)';
       console.log('📧 Usando receipt_email:', customer_email);
     }
 
-    // 4. Si no hay email aún, usar metadata.donor_email
-    if (!customer_email && paymentIntent.metadata && paymentIntent.metadata.donor_email) {
+    if (!customer_email && paymentIntent.metadata?.donor_email) {
       customer_email = paymentIntent.metadata.donor_email;
       customer_name = 'Donante (Metadata)';
       console.log('📧 Usando metadata.donor_email:', customer_email);
@@ -133,7 +171,8 @@ async function handleOneTimeDonation(paymentIntent) {
         shipping: paymentIntent.shipping,
         metadata: paymentIntent.metadata
       });
-      // Para pruebas, usar email por defecto
+      
+      // ÚLTIMO RECURSO: Email por defecto para pruebas
       customer_email = process.env.EMAIL_USER;
       customer_name = 'Donante (Email no proporcionado)';
       console.log('⚠️ Usando email por defecto para pruebas:', customer_email);
@@ -148,7 +187,7 @@ async function handleOneTimeDonation(paymentIntent) {
       payment_id: paymentIntent.id
     };
 
-    console.log('📧 Enviando email a:', customer_email);
+    console.log('📧 Enviando email con datos:', paymentData);
     await sendDonationEmail(paymentData);
     
   } catch (error) {
@@ -156,7 +195,7 @@ async function handleOneTimeDonation(paymentIntent) {
   }
 }
 
-// Función para procesar donación por suscripción
+// Función para procesar donación por suscripción (sin cambios)
 async function handleSubscriptionDonation(invoice) {
   try {
     const customer = await stripe.customers.retrieve(invoice.customer);
@@ -175,18 +214,6 @@ async function handleSubscriptionDonation(invoice) {
   } catch (error) {
     console.error('❌ Error procesando donación por suscripción:', error);
   }
-}
-
-// Middleware para manejar el body raw
-function runMiddleware(req, res, fn) {
-  return new Promise((resolve, reject) => {
-    fn(req, res, (result) => {
-      if (result instanceof Error) {
-        return reject(result);
-      }
-      return resolve(result);
-    });
-  });
 }
 
 export default async function handler(req, res) {
@@ -234,7 +261,6 @@ export default async function handler(req, res) {
       
       case 'customer.subscription.created':
         console.log('🆕 Nueva suscripción creada:', event.data.object.id);
-        // No enviar email aquí, se enviará en invoice.payment_succeeded
         break;
       
       default:

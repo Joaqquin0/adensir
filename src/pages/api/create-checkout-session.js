@@ -20,7 +20,6 @@ export default async function handler(req, res) {
       });
     });
   } catch (err) {
-    // Si el token no es válido, el middleware devuelve un error
     console.error("Error de autenticación:", err.message);
     res.setHeader("Access-Control-Allow-Origin", "*");
     return res.status(401).json({ error: "Token inválido o no proporcionado." });
@@ -63,14 +62,26 @@ export default async function handler(req, res) {
         cancel_url: "https://adensir.com/donacion",
       };
 
-      // Para donaciones únicas, crear customer para capturar email
+      // SOLUCIÓN CORREGIDA:
       if (mode === "payment") {
-        sessionConfig.customer_creation = "always";
+        // Para donaciones únicas: NO crear customer automáticamente
+        sessionConfig.customer_creation = "if_required"; // Solo si es necesario
+        
+        // Stripe capturará automáticamente el email en customer_details
+        // sin crear un customer permanente
+        
+      } else if (mode === "subscription") {
+        // Para suscripciones: Stripe SIEMPRE crea customer automáticamente
+        // No necesitamos especificar customer_creation para subscriptions
+        // Stripe lo maneja internamente
+        
+        console.log("🔄 Configurando suscripción - Stripe creará customer automáticamente");
       }
-      // Para suscripciones no agregamos customer_creation ya que Stripe maneja automáticamente
 
       // Crear sesión de checkout en Stripe
       const session = await stripe.checkout.sessions.create(sessionConfig);
+
+      console.log(`✅ Sesión creada - Modo: ${mode}, ID: ${session.id}`);
 
       res.setHeader("Access-Control-Allow-Origin", "*");
       return res.status(200).json({ url: session.url });
