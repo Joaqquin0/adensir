@@ -32,33 +32,32 @@ async function sendDonationEmail(paymentData) {
   console.log('📧 Preparando email para:', customer_email);
   
   const emailTemplate = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <title>Confirmación de Donación - ${process.env.ORG_NAME}</title>
-    </head>
-    <body style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-      <div style="text-align: center;">
-        <img src="https://adensir.com/img/gracias.jpg" alt="gracias_img" style="max-width:100%;height:auto;"/>
-      </div>
-      <div style="padding: 30px;">
-        <h2 style="font-size: 24px; margin-bottom: 16px;">Hola ${customer_name},</h2>
-        <p style="font-size: 16px;">Gracias por tu generosa donación. Tu apoyo hace una diferencia real en nuestra misión.</p>
-        <p style="font-size: 16px;"><strong>Monto:</strong> $${(amount/100).toFixed(2)} ${currency.toUpperCase()}</p>
-        <div style="background-color: #e9ecef; padding: 20px; border-radius: 5px; margin: 20px 0;">
-          <h3 style="font-size: 20px; margin-bottom: 10px;">Detalles de tu donación:</h3>
-          <p style="font-size: 16px;"><strong>Tipo:</strong> ${type === 'subscription' ? 'Donación Mensual (Suscripción)' : 'Donación Única'}</p>
-          <p style="font-size: 16px;"><strong>ID de transacción:</strong> ${payment_id}</p>
-          <p style="font-size: 16px;"><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-ES')}</p>
-        </div>
-      </div>
-      <div style="text-align: center;">
-        <img src="https://adensir.com/img/Mesa%20de%20trabajo%201_1MEJOREMOS%20EL%20MUNDO%20A%20TRAVES%20DEL%20DEPORTE.jpg" alt="mejoremos_img" style="max-width:100%;height:auto;display:block;margin-bottom:-10px;"/>
-        <img src="https://adensir.com/img/Mesa%20de%20trabajo%201%20copia%2020MEJOREMOS%20EL%20MUNDO%20A%20TRAVES%20DEL%20DEPORTE.jpg" alt="footer_img" style="max-width:100%;height:auto;display:block;margin-top:-10px;"/>
-      </div>
-    </body>
-    </html>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Confirmación de Donación - ${process.env.ORG_NAME}</title>
+</head>
+<body style="max-width: 420px; margin: 0 auto; font-family: Arial, sans-serif; background: #f7f7f7; color: #222;">
+  <img src="https://adensir.com/img/gracias.jpg" alt="gracias_img" style="max-width: 100%; display: block;"/>
+  
+  <div style="background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.07); padding: 24px 18px;">
+    <h2 style="font-size: 20px; margin-bottom: 12px;">Hola ${customer_name},</h2>
+    <p style="font-size: 15px; margin-bottom: 8px;">Gracias por tu generosa donación. Tu apoyo hace una diferencia real en nuestra misión.</p>
+    <p style="font-size: 15px; margin-bottom: 8px;"><strong>Monto:</strong> $${(amount/100).toFixed(2)} ${currency.toUpperCase()}</p>
+    
+    <div style="background: #e9ecef; padding: 14px; border-radius: 7px; margin: 16px 0;">
+      <h3 style="font-size: 15px; margin-bottom: 8px;">Detalles de tu donación:</h3>
+      <p style="font-size: 15px; margin-bottom: 8px;"><strong>Tipo:</strong> ${type === 'subscription' ? 'Donación Mensual (Suscripción)' : 'Donación Única'}</p>
+      <p style="font-size: 15px; margin-bottom: 8px;"><strong>ID de transacción:</strong> ${payment_id}</p>
+      <p style="font-size: 15px; margin-bottom: 8px;"><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-ES')}</p>
+    </div>
+  </div>
+  
+  <img src="https://adensir.com/img/Mesa%20de%20trabajo%201_1MEJOREMOS%20EL%20MUNDO%20A%20TRAVES%20DEL%20DEPORTE.jpg" alt="mejoremos_img" style="max-width: 100%; display: block;"/>
+  <img src="https://adensir.com/img/Mesa%20de%20trabajo%201%20copia%2020MEJOREMOS%20EL%20MUNDO%20A%20TRAVES%20DEL%20DEPORTE.jpg" alt="footer_img" style="max-width: 100%; display: block;"/>
+</body>
+</html>
   `;
 
   const mailOptions = {
