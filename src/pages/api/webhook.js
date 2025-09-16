@@ -6,11 +6,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 // Configurar nodemailer para Hostinger
  const transporter = nodemailer.createTransport({
   host: 'smtp.hostinger.com',
-  port: 465,
-  secure: true, // true para 465, false para 587
+  port: 587,
+  secure: false, // true para 465, false para 587
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD
+  },
+  tls: {
+    rejectUnauthorized: false
   }
 });
 
