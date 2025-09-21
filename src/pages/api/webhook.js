@@ -43,7 +43,7 @@ async function sendDonationEmail(paymentData) {
   <meta charset="UTF-8">
   <title>Confirmación de Donación - ${process.env.ORG_NAME}</title>
 </head>
-<body style="max-width: 420px; margin: 0 auto; font-family: Arial, sans-serif; background: #f7f7f7; color: #222;">
+<body style="max-width: 720px; margin: 0 auto; font-family: Arial, sans-serif; background: #f7f7f7; color: #222;">
   <img src="https://adensir.com/img/gracias.jpg" alt="gracias_img" style="max-width: 100%; display: block;"/>
   
   <div style="background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.07); padding: 24px 18px;">
@@ -69,7 +69,13 @@ async function sendDonationEmail(paymentData) {
     from: `"${process.env.ORG_NAME}" <${process.env.EMAIL_USER}>`,
     to: customer_email,
     subject: `Confirmación de donación - ${process.env.ORG_NAME}`,
-    html: emailTemplate
+    html: emailTemplate,
+    headers: {
+      'X-Priority': '3',
+      'X-MSMail-Priority': 'Normal',
+      'Importance': 'Normal',
+      'List-Unsubscribe': `<mailto:${process.env.EMAIL_USER}?subject=Unsubscribe>`,
+    }
   };
 
   console.log('📧 Configuración de email:', {
