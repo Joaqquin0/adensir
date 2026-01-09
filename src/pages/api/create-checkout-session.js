@@ -63,7 +63,7 @@ export default async function handler(req, res) {
         
         // Configuración para mejorar UX
         allow_promotion_codes: false,
-        billing_address_collection: "auto",
+        billing_address_collection: "required",
         
         // Metadata para tracking
         metadata: {
@@ -87,6 +87,9 @@ export default async function handler(req, res) {
             amount: price.unit_amount,
             currency: price.currency,
           },
+          
+          setup_future_usage: null, // Evitar conflictos con PayPal
+
         };
 
         // Si tienes información del cliente, agrégala
@@ -99,7 +102,7 @@ export default async function handler(req, res) {
       } else if (mode === "subscription") {
         // Para suscripciones: mantener PayPal habilitado también
         // sessionConfig.payment_method_types ya tiene ["card", "paypal"]
-        
+        sessionConfig.payment_method_types = ["card"];
         // Para suscripciones: configuración específica
         sessionConfig.subscription_data = {
           metadata: {
