@@ -88,7 +88,7 @@ export default async function handler(req, res) {
             currency: price.currency,
           },
           
-          setup_future_usage: null, // Evitar conflictos con PayPal
+          //setup_future_usage: null, // Evitar conflictos con PayPal
 
         };
 
