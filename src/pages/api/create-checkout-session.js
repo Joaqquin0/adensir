@@ -100,9 +100,10 @@ export default async function handler(req, res) {
         console.log("💳 Configurando pago único con PayPal habilitado");
         
       } else if (mode === "subscription") {
-        // Para suscripciones: mantener PayPal habilitado también
-        // sessionConfig.payment_method_types ya tiene ["card", "paypal"]
-        sessionConfig.payment_method_types = ["card"];
+        // ⚠️ PRUEBAS: PayPal habilitado para suscripciones
+        // Nota: Puede haber problemas con renovaciones automáticas
+        sessionConfig.payment_method_types = ["card", "paypal"];
+        
         // Para suscripciones: configuración específica
         sessionConfig.subscription_data = {
           metadata: {
@@ -116,7 +117,7 @@ export default async function handler(req, res) {
           sessionConfig.customer_email = customerEmail;
         }
 
-        console.log("🔄 Configurando suscripción con PayPal habilitado para pruebas");
+        console.log("⚠️ PRUEBAS: Suscripción con PayPal habilitado (monitorear renovaciones)");
       }
 
       // Crear sesión de checkout en Stripe
